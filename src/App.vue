@@ -166,7 +166,7 @@ let codeReader = null;
 let locked = false;
 
 // Сюда позже вставим URL Google Apps Script
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUVrozKIIvDSoyBNnfrVLYDQPmtcuNdC-ToHVWjO37emSF8RIQY7QveJpKG_DBnsBh/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxHvCWhBCnNAESDTMXI24qZBLtzlpbYJbrxZGNRV64fiWsitUDJ-FOY1A8o7ZnOe-sG/exec";
 onMounted(async () => {
 
   codeReader = new BrowserMultiFormatReader();
