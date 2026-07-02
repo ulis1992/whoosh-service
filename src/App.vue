@@ -166,7 +166,7 @@ let codeReader = null;
 let locked = false;
 
 // Сюда позже вставим URL Google Apps Script
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxHvCWhBCnNAESDTMXI24qZBLtzlpbYJbrxZGNRV64fiWsitUDJ-FOY1A8o7ZnOe-sG/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzFi9X_pFZ2ALIy5kGD6t-L3BLNbWIFnNl9orqs0YBmDVcpwm3gMkqvXiSIuo7uT71M/exec";
 onMounted(async () => {
 
   codeReader = new BrowserMultiFormatReader();
@@ -255,11 +255,9 @@ async function saveInspection() {
 
     if (WEBAPP_URL !== "") {
 
-   await fetch(WEBAPP_URL, {
+await fetch(WEBAPP_URL, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
+  mode: "no-cors",
   body: JSON.stringify(data)
 });
 
