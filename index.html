@@ -8,7 +8,9 @@
 <title>Whoosh Service</title>
 
 <link rel="stylesheet" href="style.css">
-
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00c853">
+  
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 </head>
@@ -128,6 +130,19 @@ placeholder="Комментарий"></textarea>
 
 </div>
 
+  <script>
+
+if("serviceWorker" in navigator){
+
+    window.addEventListener("load",()=>{
+
+        navigator.serviceWorker.register("sw.js");
+
+    });
+
+}
+
+</script>
 <script src="app.js"></script>
 
 </body>
