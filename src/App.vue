@@ -282,10 +282,15 @@ async function saveInspection() {
 
     locked = false;
 
-catch (e) {
-  console.error("SAVE ERROR:", e.response || e);
-  alert("Ошибка сохранения");
-}
+  } catch (e) {
+
+    console.error(e);
+
+    alert("Ошибка сохранения");
+
+    locked = false;
+
+  }
 
 }
 </script>
