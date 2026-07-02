@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Whoosh Service</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Осмотр самоката</h1>
+
+<div id="reader"></div>
+
+<input
+id="qr"
+type="text"
+placeholder="Ожидание QR..."
+readonly
+>
+
+<div class="group">
+
+<h3>Рама</h3>
+
+<div class="buttons">
+
+<button data-group="frame" data-value="Целая">
+🟢 Целая
+</button>
+
+<button data-group="frame" data-value="Сломана">
+🔴 Сломана
+</button>
+
+</div>
+
+</div>
+
+<div class="group">
+
+<h3>Стойка</h3>
+
+<div class="buttons">
+
+<button data-group="stem" data-value="Целая">
+🟢 Целая
+</button>
+
+<button data-group="stem" data-value="Сломана">
+🔴 Сломана
+</button>
+
+</div>
+
+</div>
+
+<div class="group">
+
+<h3>IOT</h3>
+
+<div class="buttons">
+
+<button data-group="iot" data-value="Есть">
+🟢 Есть
+</button>
+
+<button data-group="iot" data-value="Нет">
+🔴 Нет
+</button>
+
+</div>
+
+</div>
+
+<div class="group">
+
+<h3>Крыло</h3>
+
+<div class="buttons">
+
+<button data-group="fender" data-value="Старое">
+🟡 Старое
+</button>
+
+<button data-group="fender" data-value="Новое">
+🟢 Новое
+</button>
+
+</div>
+
+</div>
+
+<div class="group">
+
+<h3>Статус</h3>
+
+<div class="buttons">
+
+<button data-group="status" data-value="No Parts">
+No Parts
+</button>
+
+<button data-group="status" data-value="Diagnostic">
+Diagnostic
+</button>
+
+</div>
+
+</div>
+
+<textarea
+id="comment"
+placeholder="Комментарий"></textarea>
+
+<button id="save">
+💾 Сохранить
+</button>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
