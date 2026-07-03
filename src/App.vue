@@ -231,7 +231,9 @@ function clearData(){
 
   }
 
-}function downloadCSV(){
+}
+
+function downloadCSV(){
 
   const inspections = JSON.parse(
     localStorage.getItem("inspections") || "[]"
@@ -274,6 +276,72 @@ function clearData(){
   link.click();
 
 }
+onMounted(async () => {
+
+  updateCounter();
+
+  codeReader = new BrowserMultiFormatReader();
+
+  try {
+
+    const devices =
+      await BrowserMultiFormatReader.listVideoInputDevices();
+
+    if (devices.length === 0) {
+
+      alert("Камера не найдена");
+
+      return;
+
+    }
+
+    const camera =
+      devices.find(d =>
+        d.label.toLowerCase().includes("back") ||
+        d.label.toLowerCase().includes("rear")
+      ) || devices[0];
+
+    codeReader.decodeFromVideoDevice(
+
+      camera.deviceId,
+
+      "reader",
+
+      (result) => {
+
+        if (!result) return;
+
+        if (locked) return;
+
+        locked = true;
+
+        let text = result.getText();
+
+        try {
+
+          const url = new URL(text);
+
+          text = url.searchParams.get("s") || text;
+
+        } catch {}
+
+        qr.value = text;
+
+        navigator.vibrate?.(100);
+
+      }
+
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Не удалось открыть камеру");
+
+  }
+
+});
 async function saveInspection(){
 
   if(!qr.value){
@@ -312,8 +380,9 @@ async function saveInspection(){
   status.value="";
   comment.value="";
 
-  locked=false;
-
+setTimeout(() => {
+    locked = false;
+}, 1000);
 }
 
 </script>
