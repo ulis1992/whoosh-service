@@ -144,9 +144,30 @@ class="save"
 >
 💾 Сохранить
 </button>
-
+<button
+class="save"
+@click="downloadCSV"
+>
+📄 Скачать CSV
+</button>
 </div>
+<button
+class="save"
+@click="clearData"
+>
+🗑 Очистить список
+</button>
+function clearData(){
 
+    if(confirm("Удалить все записи?")){
+
+        localStorage.removeItem("inspections");
+
+        alert("Список очищен");
+
+    }
+
+}
 </template>
 <script setup>
 
@@ -164,7 +185,22 @@ const comment = ref("");
 
 let codeReader = null;
 let locked = false;
+function saveLocal(data) {
 
+  const inspections =
+    JSON.parse(localStorage.getItem("inspections") || "[]");
+
+  inspections.push({
+    time: new Date().toLocaleString(),
+    ...data
+  });
+
+  localStorage.setItem(
+    "inspections",
+    JSON.stringify(inspections)
+  );
+
+}
 // Сюда позже вставим URL Google Apps Script
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzFi9X_pFZ2ALIy5kGD6t-L3BLNbWIFnNl9orqs0YBmDVcpwm3gMkqvXiSIuo7uT71M/exec";
 onMounted(async () => {
@@ -230,7 +266,43 @@ onMounted(async () => {
 
 });
 async function saveInspection() {
+function downloadCSV() {
 
+  const inspections =
+    JSON.parse(localStorage.getItem("inspections") || "[]");
+
+  if (inspections.length === 0) {
+
+    alert("Нет данных");
+
+    return;
+
+  }
+
+  let csv =
+"Дата;QR;Рама;Стойка;IOT;Крыло;Статус;Комментарий\n";
+
+  inspections.forEach(i => {
+
+    csv +=
+`${i.time};${i.qr};${i.frame};${i.stem};${i.iot};${i.fender};${i.status};${i.comment}\n`;
+
+  });
+
+  const blob = new Blob(
+    ["\ufeff" + csv],
+    { type: "text/csv;charset=utf-8;" }
+  );
+
+  const link = document.createElement("a");
+
+  link.href = URL.createObjectURL(blob);
+
+  link.download = "inspection.csv";
+
+  link.click();
+
+}
   if (!qr.value) {
 
     alert("Сначала отсканируйте QR");
@@ -250,14 +322,16 @@ async function saveInspection() {
     comment: comment.value
 
   };
-
+saveLocal(data);
   try {
 
     if (WEBAPP_URL !== "") {
 
-await fetch(WEBAPP_URL, {
+   await fetch(WEBAPP_URL, {
   method: "POST",
-  mode: "no-cors",
+  headers: {
+    "Content-Type": "application/json"
+  },
   body: JSON.stringify(data)
 });
 
