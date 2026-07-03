@@ -9,7 +9,7 @@
 <b>{{ inspectionsCount }}</b>
 </p>
 
-<div id="reader"></div>
+<video id="reader"></video>
 
 <input
 v-model="qr"
