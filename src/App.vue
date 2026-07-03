@@ -5,10 +5,8 @@
 <h1>Осмотр самоката</h1>
 
 <p class="counter">
-
 Сегодня осмотрено:
 <b>{{ inspectionsCount }}</b>
-
 </p>
 
 <div id="reader"></div>
@@ -90,6 +88,7 @@ placeholder="Ожидание QR..."
 </div>
 
 </div>
+
 <div class="group">
 
 <h3>Крыло</h3>
@@ -168,8 +167,8 @@ class="save clear"
 </div>
 
 </template>
-<script setup>
 
+<script setup>
 import { ref, onMounted } from "vue";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 
@@ -187,7 +186,7 @@ const inspectionsCount = ref(0);
 let codeReader = null;
 let locked = false;
 
-function updateCounter(){
+function updateCounter() {
 
   const inspections = JSON.parse(
     localStorage.getItem("inspections") || "[]"
@@ -197,17 +196,15 @@ function updateCounter(){
 
 }
 
-function saveLocal(data){
+function saveLocal(data) {
 
   const inspections = JSON.parse(
     localStorage.getItem("inspections") || "[]"
   );
 
   inspections.push({
-
-    time:new Date().toLocaleString(),
+    time: new Date().toLocaleString(),
     ...data
-
   });
 
   localStorage.setItem(
@@ -219,29 +216,26 @@ function saveLocal(data){
 
 }
 
-function clearData(){
+function clearData() {
 
-  if(confirm("Удалить все записи?")){
+  if (!confirm("Удалить все записи?")) return;
 
-    localStorage.removeItem("inspections");
+  localStorage.removeItem("inspections");
 
-    updateCounter();
+  updateCounter();
 
-    alert("Список очищен");
-
-  }
+  alert("Список очищен");
 
 }
-
-function downloadCSV(){
+function downloadCSV() {
 
   const inspections = JSON.parse(
     localStorage.getItem("inspections") || "[]"
   );
 
-  if(inspections.length===0){
+  if (inspections.length === 0) {
 
-    alert("Нет сохраненных данных");
+    alert("Нет сохранённых данных");
 
     return;
 
@@ -250,7 +244,7 @@ function downloadCSV(){
   let csv =
 "Дата;QR;Рама;Стойка;IOT;Крыло;Статус;Комментарий\n";
 
-  inspections.forEach(i=>{
+  inspections.forEach(i => {
 
     csv +=
 `${i.time};${i.qr};${i.frame};${i.stem};${i.iot};${i.fender};${i.status};${i.comment}\n`;
@@ -258,9 +252,9 @@ function downloadCSV(){
   });
 
   const blob = new Blob(
-    ["\ufeff"+csv],
+    ["\ufeff" + csv],
     {
-      type:"text/csv;charset=utf-8;"
+      type: "text/csv;charset=utf-8;"
     }
   );
 
@@ -270,7 +264,7 @@ function downloadCSV(){
 
   link.download =
     "inspection_" +
-    new Date().toISOString().slice(0,10) +
+    new Date().toISOString().slice(0, 10) +
     ".csv";
 
   link.click();
@@ -284,29 +278,18 @@ onMounted(async () => {
 
   try {
 
-    const devices =
-      await BrowserMultiFormatReader.listVideoInputDevices();
-
-    if (devices.length === 0) {
-
-      alert("Камера не найдена");
-
-      return;
-
-    }
-
-    const camera = devices[0];
-
-    codeReader.decodeFromVideoDevice(
-
-      camera.deviceId,
-
+    await codeReader.decodeFromConstraints(
+      {
+        video: {
+          facingMode: {
+            ideal: "environment"
+          }
+        }
+      },
       "reader",
-
       (result) => {
 
         if (!result) return;
-
         if (locked) return;
 
         locked = true;
@@ -319,28 +302,29 @@ onMounted(async () => {
 
           text = url.searchParams.get("s") || text;
 
-        } catch {}
+        } catch (e) {}
 
         qr.value = text;
 
-        navigator.vibrate?.(100);
+        if (navigator.vibrate) {
+          navigator.vibrate(100);
+        }
 
       }
-
     );
 
   } catch (err) {
 
     console.error(err);
 
-    alert("Не удалось открыть камеру");
+    alert("Не удалось открыть камеру: " + err.message);
 
   }
 
 });
-async function saveInspection(){
+async function saveInspection() {
 
-  if(!qr.value){
+  if (!qr.value) {
 
     alert("Сначала отсканируйте QR");
 
@@ -348,37 +332,38 @@ async function saveInspection(){
 
   }
 
-  const data={
+  const data = {
 
-    qr:qr.value,
-    frame:frame.value,
-    stem:stem.value,
-    iot:iot.value,
-    fender:fender.value,
-    status:status.value,
-    comment:comment.value
+    qr: qr.value,
+    frame: frame.value,
+    stem: stem.value,
+    iot: iot.value,
+    fender: fender.value,
+    status: status.value,
+    comment: comment.value
 
   };
 
-  // Сохраняем в память телефона
   saveLocal(data);
 
-  navigator.vibrate?.([100,50,100]);
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100]);
+  }
 
   alert("✅ Самокат сохранён");
 
-  qr.value="";
+  qr.value = "";
+  frame.value = "";
+  stem.value = "";
+  iot.value = "";
+  fender.value = "";
+  status.value = "";
+  comment.value = "";
 
-  frame.value="";
-  stem.value="";
-  iot.value="";
-  fender.value="";
-  status.value="";
-  comment.value="";
-
-setTimeout(() => {
+  setTimeout(() => {
     locked = false;
-}, 1000);
+  }, 1000);
+
 }
 
 </script>
@@ -412,7 +397,7 @@ h1{
 
 .counter{
 
-    color:#fff;
+    color:white;
     text-align:center;
     font-size:20px;
     margin-bottom:20px;
@@ -422,7 +407,7 @@ h1{
 #reader{
 
     width:100%;
-    min-height:280px;
+    min-height:300px;
     background:#000;
     border-radius:12px;
     overflow:hidden;
@@ -484,10 +469,10 @@ textarea{
     padding:14px;
     border:none;
     border-radius:10px;
-    font-size:17px;
-    cursor:pointer;
     background:#555;
     color:white;
+    font-size:17px;
+    cursor:pointer;
     transition:.2s;
 
 }
@@ -502,13 +487,13 @@ textarea{
 
     width:100%;
     padding:16px;
-    font-size:20px;
+    margin-top:10px;
     border:none;
     border-radius:10px;
-    margin-top:10px;
+    font-size:20px;
     cursor:pointer;
-    background:#00C853;
     color:white;
+    background:#00C853;
 
 }
 
@@ -545,23 +530,23 @@ textarea{
 
 @media(max-width:600px){
 
-    .container{
+.container{
 
-        padding:12px;
+padding:12px;
 
-    }
+}
 
-    .buttons{
+.buttons{
 
-        flex-direction:column;
+flex-direction:column;
 
-    }
+}
 
-    .buttons button{
+.buttons button{
 
-        width:100%;
+width:100%;
 
-    }
+}
 
 }
 
