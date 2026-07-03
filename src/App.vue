@@ -4,13 +4,19 @@
 
 <h1>Осмотр самоката</h1>
 
+<p class="counter">
+
+Сегодня осмотрено:
+<b>{{ inspectionsCount }}</b>
+
+</p>
+
 <div id="reader"></div>
 
 <input
 v-model="qr"
 type="text"
 placeholder="Ожидание QR..."
-
 />
 
 <div class="group">
@@ -144,30 +150,23 @@ class="save"
 >
 💾 Сохранить
 </button>
+
 <button
-class="save"
+class="save export"
 @click="downloadCSV"
 >
 📄 Скачать CSV
 </button>
-</div>
+
 <button
-class="save"
+class="save clear"
 @click="clearData"
 >
 🗑 Очистить список
 </button>
-function clearData(){
 
-    if(confirm("Удалить все записи?")){
+</div>
 
-        localStorage.removeItem("inspections");
-
-        alert("Список очищен");
-
-    }
-
-}
 </template>
 <script setup>
 
@@ -183,16 +182,32 @@ const fender = ref("");
 const status = ref("");
 const comment = ref("");
 
+const inspectionsCount = ref(0);
+
 let codeReader = null;
 let locked = false;
-function saveLocal(data) {
 
-  const inspections =
-    JSON.parse(localStorage.getItem("inspections") || "[]");
+function updateCounter(){
+
+  const inspections = JSON.parse(
+    localStorage.getItem("inspections") || "[]"
+  );
+
+  inspectionsCount.value = inspections.length;
+
+}
+
+function saveLocal(data){
+
+  const inspections = JSON.parse(
+    localStorage.getItem("inspections") || "[]"
+  );
 
   inspections.push({
-    time: new Date().toLocaleString(),
+
+    time:new Date().toLocaleString(),
     ...data
+
   });
 
   localStorage.setItem(
@@ -200,80 +215,31 @@ function saveLocal(data) {
     JSON.stringify(inspections)
   );
 
+  updateCounter();
+
 }
-// Сюда позже вставим URL Google Apps Script
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzFi9X_pFZ2ALIy5kGD6t-L3BLNbWIFnNl9orqs0YBmDVcpwm3gMkqvXiSIuo7uT71M/exec";
-onMounted(async () => {
 
-  codeReader = new BrowserMultiFormatReader();
+function clearData(){
 
-  try {
+  if(confirm("Удалить все записи?")){
 
-    const devices =
-      await BrowserMultiFormatReader.listVideoInputDevices();
+    localStorage.removeItem("inspections");
 
-    const camera =
-      devices.find(d =>
-        d.label.toLowerCase().includes("back") ||
-        d.label.toLowerCase().includes("rear")
-      ) || devices[0];
+    updateCounter();
 
-    codeReader.decodeFromVideoDevice(
-
-      camera.deviceId,
-
-      "reader",
-
-      (result) => {
-
-        if (!result) return;
-
-        if (locked) return;
-
-        locked = true;
-
-        let text = result.getText();
-
-        try {
-
-          const url = new URL(text);
-
-          const s = url.searchParams.get("s");
-
-          if (s) {
-            text = s;
-          }
-
-        } catch (e) {}
-
-        qr.value = text;
-
-        if (navigator.vibrate) {
-          navigator.vibrate(100);
-        }
-
-      }
-
-    );
-
-  } catch (err) {
-
-    console.error(err);
-
-    alert("Не удалось открыть камеру");
+    alert("Список очищен");
 
   }
 
-});
-async function saveInspection() {
-function downloadCSV() {
+}function downloadCSV(){
 
-  const inspections =
-    JSON.parse(localStorage.getItem("inspections") || "[]");
+  const inspections = JSON.parse(
+    localStorage.getItem("inspections") || "[]"
+  );
 
-  if (inspections.length === 0) {
+  if(inspections.length===0){
 
-    alert("Нет данных");
+    alert("Нет сохраненных данных");
 
     return;
 
@@ -282,7 +248,7 @@ function downloadCSV() {
   let csv =
 "Дата;QR;Рама;Стойка;IOT;Крыло;Статус;Комментарий\n";
 
-  inspections.forEach(i => {
+  inspections.forEach(i=>{
 
     csv +=
 `${i.time};${i.qr};${i.frame};${i.stem};${i.iot};${i.fender};${i.status};${i.comment}\n`;
@@ -290,20 +256,27 @@ function downloadCSV() {
   });
 
   const blob = new Blob(
-    ["\ufeff" + csv],
-    { type: "text/csv;charset=utf-8;" }
+    ["\ufeff"+csv],
+    {
+      type:"text/csv;charset=utf-8;"
+    }
   );
 
   const link = document.createElement("a");
 
   link.href = URL.createObjectURL(blob);
 
-  link.download = "inspection.csv";
+  link.download =
+    "inspection_" +
+    new Date().toISOString().slice(0,10) +
+    ".csv";
 
   link.click();
 
 }
-  if (!qr.value) {
+async function saveInspection(){
+
+  if(!qr.value){
 
     alert("Сначала отсканируйте QR");
 
@@ -311,63 +284,50 @@ function downloadCSV() {
 
   }
 
-  const data = {
+  const data={
 
-    qr: qr.value,
-    frame: frame.value,
-    stem: stem.value,
-    iot: iot.value,
-    fender: fender.value,
-    status: status.value,
-    comment: comment.value
+    qr:qr.value,
+    frame:frame.value,
+    stem:stem.value,
+    iot:iot.value,
+    fender:fender.value,
+    status:status.value,
+    comment:comment.value
 
   };
-saveLocal(data);
-  try {
 
-    if (WEBAPP_URL !== "") {
+  // Сохраняем в память телефона
+  saveLocal(data);
 
-   await fetch(WEBAPP_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(data)
-});
+  navigator.vibrate?.([100,50,100]);
 
-    }
+  alert("✅ Самокат сохранён");
 
-    if (navigator.vibrate) {
+  qr.value="";
 
-      navigator.vibrate([100,50,100]);
+  frame.value="";
+  stem.value="";
+  iot.value="";
+  fender.value="";
+  status.value="";
+  comment.value="";
 
-    }
-
-    qr.value = "";
-
-    frame.value = "";
-    stem.value = "";
-    iot.value = "";
-    fender.value = "";
-    status.value = "";
-    comment.value = "";
-
-    locked = false;
-
-  } catch (e) {
-
-    console.error(e);
-
-    alert("Ошибка сохранения");
-
-    locked = false;
-
-  }
+  locked=false;
 
 }
-</script>
 
+</script>
 <style scoped>
+
+html,
+body{
+
+    margin:0;
+    padding:0;
+    background:#1f1f1f;
+    font-family:Arial,Helvetica,sans-serif;
+
+}
 
 .container{
 
@@ -379,7 +339,17 @@ saveLocal(data);
 
 h1{
 
+    color:white;
     text-align:center;
+    margin-bottom:10px;
+
+}
+
+.counter{
+
+    color:#fff;
+    text-align:center;
+    font-size:20px;
     margin-bottom:20px;
 
 }
@@ -387,7 +357,7 @@ h1{
 #reader{
 
     width:100%;
-    min-height:260px;
+    min-height:280px;
     background:#000;
     border-radius:12px;
     overflow:hidden;
@@ -395,10 +365,19 @@ h1{
 
 }
 
+#reader video{
+
+    width:100%;
+    height:100%;
+    object-fit:cover;
+
+}
+
 input,
 textarea{
 
     width:100%;
+    box-sizing:border-box;
     padding:15px;
     font-size:18px;
     border:none;
@@ -422,6 +401,7 @@ textarea{
 
 .group h3{
 
+    color:white;
     margin-bottom:8px;
 
 }
@@ -456,18 +436,39 @@ textarea{
 .save{
 
     width:100%;
-    padding:18px;
-    font-size:22px;
+    padding:16px;
+    font-size:20px;
     border:none;
     border-radius:10px;
+    margin-top:10px;
+    cursor:pointer;
     background:#00C853;
     color:white;
-    cursor:pointer;
 
 }
+
+.export{
+
+    background:#1976D2;
+
+}
+
+.clear{
+
+    background:#D32F2F;
+
+}
+
+.save:disabled{
+
+    opacity:.5;
+    cursor:not-allowed;
+
+}
+
 .save:hover{
 
-    opacity:.95;
+    opacity:.9;
 
 }
 
@@ -477,24 +478,11 @@ textarea{
 
 }
 
-@media (max-width:600px){
+@media(max-width:600px){
 
     .container{
 
         padding:12px;
-
-    }
-
-    h1{
-
-        font-size:28px;
-
-    }
-
-    input,
-    textarea{
-
-        font-size:16px;
 
     }
 
@@ -509,18 +497,6 @@ textarea{
         width:100%;
 
     }
-
-}
-
-html{
-
-    background:#1f1f1f;
-
-}
-
-body{
-
-    background:#1f1f1f;
 
 }
 
