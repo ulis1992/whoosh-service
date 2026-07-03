@@ -295,11 +295,7 @@ onMounted(async () => {
 
     }
 
-    const camera =
-      devices.find(d =>
-        d.label.toLowerCase().includes("back") ||
-        d.label.toLowerCase().includes("rear")
-      ) || devices[0];
+    const camera = devices[0];
 
     codeReader.decodeFromVideoDevice(
 
